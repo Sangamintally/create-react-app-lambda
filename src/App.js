@@ -1,50 +1,55 @@
-import React, { Component } from "react"
-import logo from "./logo.svg"
-import "./App.css"
-
-class LambdaDemo extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { loading: false, msg: null }
-  }
-
-  handleClick = api => e => {
-    e.preventDefault()
-
-    this.setState({ loading: true })
-    fetch("/.netlify/functions/" + api)
-      .then(response => response.json())
-      .then(json => this.setState({ loading: false, msg: json.msg }))
-  }
-
-  render() {
-    const { loading, msg } = this.state
-
-    return (
-      <p>
-        <button onClick={this.handleClick("hello")}>{loading ? "Loading..." : "Call Lambda"}</button>
-        <button onClick={this.handleClick("async-dadjoke")}>{loading ? "Loading..." : "Call Async Lambda"}</button>
-        <br />
-        <span>{msg}</span>
-      </p>
-    )
-  }
-}
+import React , {Component} from 'react';
+import './App.css';
+import Food from './container/Food';
+import Recipe from './container/Recipe';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import { searchFood , searchRecipe } from './container/Api';
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <LambdaDemo />
-        </header>
+  constructor(props) {
+    super(props);
+    this.state = {
+      food: [],
+      Recipe: [],
+      searchValue:''
+    };
+  }
+  handleClick = async()=>{
+      const response1 = await searchFood({food: this.state.searchValue})
+      this.setState({food: response1.data.hints})
+  
+      const response2 = await searchRecipe({food: this.state.searchValue})
+      this.setState({Recipe: response2.data.hits})
+  }
+
+  render(){
+  return (
+    <div className="App">
+      <div className = "d-flex search-block">
+      <TextField
+          id="filled-full-width"
+          style={{ margin: 8  }}
+          placeholder="Placeholder"
+          fullWidth
+          margin="normal"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          variant="filled"
+          onChange={event => {
+            const { value } = event.target;
+            this.setState({ searchValue: value });
+          }}
+        /> 
+        <Button variant="contained" color="primary" disableElevation onClick={this.handleClick}> Search</Button>
       </div>
-    )
+  
+       <Food  filterFood = {this.state.food} item = {this.state.food.length}/> 
+       <Recipe Recipe = {this.state.Recipe} item = {this.state.food.length} /> 
+    </div>
+  );
   }
 }
 
-export default App
+export default App;
